@@ -1,6 +1,8 @@
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, HTTPException
 from typing import List
-from models import Ticket
+from datetime import datetime
+from models import Ticket, TicketCreate
 
 app = FastAPI(
     title="ServiceIQ Ticketing API",
@@ -8,8 +10,18 @@ app = FastAPI(
     version="1.0"
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Temporary in-memory storage
 tickets = []
+
+ticket_counter = 1
 
 
 @app.get("/")
@@ -20,11 +32,46 @@ def home():
 
 
 @app.post("/tickets")
-def create_ticket(ticket: Ticket):
-    tickets.append(ticket)
+def create_ticket(ticket: TicketCreate):
+
+    global ticket_counter
+
+
+    new_ticket = Ticket(
+
+        ticket_id=ticket_counter,
+
+        customer_name=ticket.customer_name,
+
+        email=ticket.email,
+
+        source=ticket.source,
+
+        category=ticket.category,
+
+        priority=ticket.priority,
+
+        description=ticket.description,
+
+        status="Open",
+
+        created_date=datetime.now()
+
+    )
+
+
+    tickets.append(new_ticket)
+
+
+    ticket_counter += 1
+
+
     return {
-        "message": "Ticket created successfully",
-        "ticket": ticket
+
+        "message":"Ticket created successfully",
+
+        "ticket":new_ticket
+
     }
 
 
